@@ -1,0 +1,28 @@
+{
+  "name": "paymentservice",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "ts-node src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev:watch": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "test": "echo \"Tests coming soon...\" && exit 0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.6.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "pino": "^9.13.0",
+    "simple-card-validator": "^1.1.0",
+    "uuid": "^13.0.0"
+  }
+}
