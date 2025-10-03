@@ -1,11 +1,6 @@
-// src/services/catalogLoader.ts
 import fs from 'fs/promises';
 import path from 'path';
-import { Product, ListProductsResponse } from './types.js';
-
-// Mutex-like flag for thread safety (Node.js is single-threaded, but async operations need coordination)
-let isLoading = false;
-let loadQueue: Array<(catalog: ListProductsResponse) => void> = [];
+import { Product, ListProductsResponse } from '../types.js';
 
 /**
  * Load catalog from local JSON file
@@ -14,7 +9,7 @@ async function loadCatalogFromLocalFile(): Promise<ListProductsResponse> {
   console.log('Loading catalog from local products.json file...');
   
   try {
-    const filePath = path.join(process.cwd(), 'products.json');
+    const filePath = path.join(process.cwd(), 'src', 'data', 'products.json');
     const fileContent = await fs.readFile(filePath, 'utf-8');
     const data = JSON.parse(fileContent);
     
@@ -47,38 +42,13 @@ async function loadCatalogFromRDS(): Promise<ListProductsResponse> {
  * Determines source (local file or RDS) based on environment variables
  */
 export async function loadCatalog(): Promise<ListProductsResponse> {
-  // Prevent concurrent loading
-  if (isLoading) {
-    return new Promise((resolve) => {
-      loadQueue.push(resolve);
-    });
-  }
-
-  isLoading = true;
-
-  try {
-    let catalog: ListProductsResponse;
-
-    // Check if RDS configuration exists
-    const rdsClusterName = process.env.RDS_CLUSTER_NAME;
-    
-    if (rdsClusterName) {
-      catalog = await loadCatalogFromRDS();
-    } else {
-      catalog = await loadCatalogFromLocalFile();
-    }
-
-    // Resolve any queued requests
-    loadQueue.forEach(resolve => resolve(catalog));
-    loadQueue = [];
-
-    return catalog;
-  } catch (error) {
-    isLoading = false;
-    loadQueue = [];
-    throw error;
-  } finally {
-    isLoading = false;
+  // Check if RDS configuration exists
+  const rdsClusterName = process.env.RDS_CLUSTER_NAME;
+  
+  if (rdsClusterName) {
+    return await loadCatalogFromRDS();
+  } else {
+    return await loadCatalogFromLocalFile();
   }
 }
 
