@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Your Order Confirmation</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  </head>
+  <style>
+    body{
+      font-family: 'DM Sans', sans-serif;
+    }
+  </style>
+  <body>
+    <h2>Your Order Confirmation</h2>
+    <p>Thanks for shopping with us!<p>
+    <h3>Order ID</h3>
+    <p>#{{orderId}}</p>
+    <h3>Shipping</h3>
+    <p>#{{shippingTrackingId}}</p>
+    <p>{{shippingCost.units}}.{{formatNanos shippingCost.nanos}} {{shippingCost.currencyCode}}</p>
+    <p>{{shippingAddress.streetAddress1}}, 
+       {{#if shippingAddress.streetAddress2}}{{shippingAddress.streetAddress2}}, {{/if}}
+       {{shippingAddress.city}}, {{shippingAddress.country}} {{shippingAddress.zipCode}}</p>
+    <h3>Items</h3>
+    <table style="width:100%">
+        <tr>
+          <th>Item No.</th>
+          <th>Quantity</th> 
+          <th>Price</th>
+        </tr>
+        {{#each items}}
+        <tr>
+          <td>#{{this.item.productId}}</td>
+          <td>{{this.item.quantity}}</td> 
+          <td>{{this.cost.units}}.{{formatNanos this.cost.nanos}} {{this.cost.currencyCode}}</td>
+        </tr>
+        {{/each}}
+    </table>
+  </body>
+</html>
