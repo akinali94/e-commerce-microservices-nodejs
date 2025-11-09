@@ -1,0 +1,199 @@
+version: '3.8'
+
+services:
+  ad-service:
+    build:
+      context: ./src/ad-service
+      dockerfile: Dockerfile
+    ports:
+      - "9555:9555"
+    environment:
+      - PORT=9555
+      - FRONTEND_URL=http://frontend:3000
+    networks:
+      - microservices-network
+
+  cart-service:
+    build:
+      context: ./src/cart-service
+      dockerfile: Dockerfile
+    ports:
+      - "9556:9556"
+    environment:
+      - PORT=9556
+      - REDIS_ADDR=redis
+      - REDIS_PORT=6379
+      - FRONTEND_URL=http://frontend:3000
+      - CHECKOUT_URL=http://checkout-service:9557
+    depends_on:
+      - redis
+    networks:
+      - microservices-network
+
+  checkout-service:
+    build:
+      context: ./src/checkout-service
+      dockerfile: Dockerfile
+    ports:
+      - "9557:9557"
+    environment:
+      - PORT=9557
+      - FRONTEND_URL=http://frontend:3000
+      - CART_SERVICE_URL=http://cart-service:9556
+      - CURRENCY_SERVICE_URL=http://currency-service:9558
+      - EMAIL_SERVICE_URL=http://email-service:9559
+      - PAYMENT_SERVICE_URL=http://payment-service:9560
+      - PRODUCT_SERVICE_URL=http://product-catalog-service:9561
+      - SHIPPING_SERVICE_URL=http://shipping-service:9563
+    depends_on:
+      - cart-service
+      - currency-service
+      - email-service
+      - payment-service
+      - product-catalog-service
+      - shipping-service
+    networks:
+      - microservices-network
+
+  currency-service:
+    build:
+      context: ./src/currency-service
+      dockerfile: Dockerfile
+    ports:
+      - "9558:9558"
+    environment:
+      - PORT=9558
+      - FRONTEND_URL=http://frontend:3000
+      - CHECKOUT_URL=http://checkout-service:9557
+      # For Caching
+      - APP_CACHE_ENABLED=true
+      - APP_CACHE_DURATION=3600000
+    networks:
+      - microservices-network
+
+  email-service:
+    build:
+      context: ./src/email-service
+      dockerfile: Dockerfile
+    ports:
+      - "9559:9559"
+    environment:
+      - PORT=9559
+      - MAIL_HOST=mailhog
+      - MAIL_PORT=1025
+      - MAIL_USERNAME=e-commerce@example.com
+      - MAIL_PASSWORD=
+      - MAIL_SMTP_AUTH=false
+      - MAIL_SMTP_STARTTLS=false
+      - EMAIL_DUMMY_MODE=false
+    depends_on:
+      - mailhog
+    networks:
+      - microservices-network
+
+  payment-service:
+    build:
+      context: ./src/payment-service
+      dockerfile: Dockerfile
+    ports:
+      - "9560:9560"
+    environment:
+      - SERVER_PORT=9560
+      - CHECKOUT_URL=http://checkout-service:9557
+    networks:
+      - microservices-network
+
+  shipping-service:
+    build:
+      context: ./src/shipping-service
+      dockerfile: Dockerfile
+    ports:
+      - "9563:9563"
+    environment:
+      - PORT=9563
+      - FRONTEND_URL=http://frontend:3000
+      - CHECKOUT_URL=http://checkout-service:9557
+    networks:
+      - microservices-network
+
+  product-catalog-service:
+    build:
+      context: ./src/product-catalog-service
+      dockerfile: Dockerfile
+    ports:
+      - "9561:9561"
+    environment:
+      - PORT=9561
+      - FRONTEND_URL=http://frontend:3000
+      - CHECKOUT_URL=http://checkout-service:9557
+      - RECOMMENDATION_URL=http://recommendation-service:9562
+    networks:
+      - microservices-network
+
+  recommendation-service:
+    build:
+      context: ./src/recommendation-service
+      dockerfile: Dockerfile
+    ports:
+      - "9562:9562"
+    environment:
+      - PORT=9562
+      - FRONTEND_URL=http://frontend:3000
+      - PRODUCT_CATALOG_SERVICE_ADDR=http://product-catalog-service:9561
+    networks:
+      - microservices-network
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_AD_SERVICE_URL=http://ad-service:9555
+      - REACT_APP_CART_SERVICE_URL=http://cart-service:9556
+      - REACT_APP_CHECKOUT_SERVICE_URL=http://checkout-service:9557
+      - REACT_APP_CURRENCY_SERVICE_URL=http://currency-service:9558
+      - REACT_APP_PRODUCT_SERVICE_URL=http://product-catalog-service:9561
+      - REACT_APP_RECOMMENDATION_SERVICE_URL=http://recommendation-service:9562
+      - REACT_APP_SHIPPING_SERVICE_URL=http://shipping-service:9563
+      - REACT_APP_SHOP_BRANDING=true
+      - REACT_APP_ENABLE_ASSISTANT=true
+      - REACT_APP_BASE_URL=""
+      - REACT_APP_DEBUG=false
+    depends_on:
+      - ad-service
+      - cart-service
+      - checkout-service
+      - currency-service
+      - product-catalog-service
+      - recommendation-service
+      - shipping-service
+    networks:
+      - microservices-network
+
+    # Redis for cart-service
+    redis:
+      image: redis:alpine
+      ports:
+        - "6379:6379"
+      volumes:
+        - redis-data:/data
+      networks:
+        - microservices-network
+
+    # MailHog - SMTP testing tool
+    mailhog:
+      image: mailhog/mailhog
+      ports:
+        - "1025:1025"  # SMTP server port
+        - "8025:8025"  # Web UI port
+      networks:
+        - microservices-network
+
+  networks:
+    microservices-network:
+      driver: bridge
+  
+  volumes:
+    redis-data:

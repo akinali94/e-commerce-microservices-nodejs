@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: email-service
+  template:
+    metadata:
+      labels:
+        app: email-service
+    spec:
+      readinessProbe:
+        httpGet:
+          path: /api/v1/health
+          port: 9555
+        initialDelaySeconds: 10
+        periodSeconds: 10
+      livenessProbe:
+        httpGet:
+          path: /api/v1/health
+          port: 9555
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: email-service
+        image: email-service
+        ports:
+        - containerPort: 9559
+        env:
+        - name: PORT
+          value: "9559"
+        - name: MAIL_HOST
+          value: "mailhog.default.svc.cluster.local"
+        - name: MAIL_PORT
+          value: "1025"
+        - name: MAIL_USERNAME
+          value: "e-commerce@example.com"
+        - name: MAIL_PASSWORD
+          value: ""
+        - name: MAIL_SMTP_AUTH
+          value: "false"
+        - name: MAIL_SMTP_STARTTLS
+          value: "false"
+        - name: EMAIL_DUMMY_MODE
+          value: "false"
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+          requests:
+            memory: "128Mi"
+            cpu: "100m"

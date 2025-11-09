@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cart-service
+  template:
+    metadata:
+      labels:
+        app: cart-service
+    spec:
+      readinessProbe:
+        httpGet:
+          path: /api/v1/health
+          port: 9555
+        initialDelaySeconds: 10
+        periodSeconds: 10
+      livenessProbe:
+        httpGet:
+          path: /api/v1/health
+          port: 9555
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: cart-service
+        image: cart-service
+        ports:
+        - containerPort: 9556
+        env:
+        - name: PORT
+          value: "9556"
+        - name: REDIS_ADDR
+          value: "redis.default.svc.cluster.local"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: FRONTEND_URL
+          value: "http://frontend.default.svc.cluster.local:3000"
+        - name: CHECKOUT_URL
+          value: "http://checkout-service.default.svc.cluster.local:9557"
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+          requests:
+            memory: "128Mi"
+            cpu: "100m"

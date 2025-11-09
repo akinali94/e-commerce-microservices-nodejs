@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: currency-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: currency-service
+  template:
+    metadata:
+      labels:
+        app: currency-service
+    spec:
+      readinessProbe:
+        httpGet:
+          path: /api/v1/health
+          port: 9555
+        initialDelaySeconds: 10
+        periodSeconds: 10
+      livenessProbe:
+        httpGet:
+          path: /api/v1/health
+          port: 9555
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: currency-service
+        image: currency-service
+        ports:
+        - containerPort: 9558
+        env:
+        - name: PORT
+          value: "9558"
+        - name: FRONTEND_URL
+          value: "http://frontend.default.svc.cluster.local:3000"
+        - name: CHECKOUT_URL
+          value: "http://checkout-service.default.svc.cluster.local:9557"
+        - name: APP_CACHE_ENABLED
+          value: "true"
+        - name: APP_CACHE_DURATION
+          value: "3600000"
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+          requests:
+            memory: "128Mi"
+            cpu: "100m"

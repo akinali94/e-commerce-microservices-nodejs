@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipping-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shipping-service
+  template:
+    metadata:
+      labels:
+        app: shipping-service
+    spec:
+      readinessProbe:
+        httpGet:
+          path: /api/v1/health
+          port: 9555
+        initialDelaySeconds: 10
+        periodSeconds: 10
+      livenessProbe:
+        httpGet:
+          path: /api/v1/health
+          port: 9555
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: shipping-service
+        image: shipping-service
+        ports:
+        - containerPort: 9563
+        env:
+        - name: PORT
+          value: "9563"
+        - name: FRONTEND_URL
+          value: "http://frontend.default.svc.cluster.local:3000"
+        - name: CHECKOUT_URL
+          value: "http://checkout-service.default.svc.cluster.local:9557"
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+          requests:
+            memory: "128Mi"
+            cpu: "100m"

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkout-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: checkout-service
+  template:
+    metadata:
+      labels:
+        app: checkout-service
+    spec:
+      readinessProbe:
+        httpGet:
+          path: /api/v1/health
+          port: 9555
+        initialDelaySeconds: 10
+        periodSeconds: 10
+      livenessProbe:
+        httpGet:
+          path: /api/v1/health
+          port: 9555
+        initialDelaySeconds: 15
+        periodSeconds: 20
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: checkout-service
+        image: checkout-service
+        ports:
+        - containerPort: 9557
+        env:
+        - name: PORT
+          value: "9557"
+        - name: FRONTEND_URL
+          value: "http://frontend.default.svc.cluster.local:3000"
+        - name: CART_SERVICE_URL
+          value: "http://cart-service.default.svc.cluster.local:9556/api/v1"
+        - name: CURRENCY_SERVICE_URL
+          value: "http://currency-service.default.svc.cluster.local:9558/api/v1"
+        - name: EMAIL_SERVICE_URL
+          value: "http://email-service.default.svc.cluster.local:9559/api/v1"
+        - name: PAYMENT_SERVICE_URL
+          value: "http://payment-service.default.svc.cluster.local:9560/api/v1"
+        - name: PRODUCT_SERVICE_URL
+          value: "http://product-catalog-service.default.svc.cluster.local:9561/api/v1"
+        - name: SHIPPING_SERVICE_URL
+          value: "http://shipping-service.default.svc.cluster.local:9563/api/v1"
+        resources:
+          limits:
+            memory: "384Mi"
+            cpu: "300m"
+          requests:
+            memory: "192Mi"
+            cpu: "150m"

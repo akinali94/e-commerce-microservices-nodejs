@@ -1,0 +1,55 @@
+apiVersion: skaffold/v2beta29
+kind: Config
+metadata:
+  name: ecommerce-microservices
+build:
+  artifacts:
+    - image: ad-service
+      context: src/ad-service
+    - image: product-catalog-service
+      context: src/product-catalog-service
+    - image: cart-service
+      context: src/cart-service
+    - image: payment-service
+      context: src/payment-service
+    - image: shipping-service
+      context: src/shipping-service
+    - image: currency-service
+      context: src/currency-service
+    - image: recommendation-service
+      context: src/recommendation-service
+    - image: email-service
+      context: src/email-service
+    - image: checkout-service
+      context: src/checkout-service
+    - image: frontend
+      context: src/frontend
+deploy:
+  kubectl:
+    manifests:
+    - k8s/deployments/ad-service.yaml
+    - k8s/services/ad-service.yaml
+    - k8s/deployments/product-catalog-service.yaml
+    - k8s/services/product-catalog-service.yaml
+    - k8s/deployments/redis.yaml
+    - k8s/services/redis.yaml
+    - k8s/deployments/cart-service.yaml
+    - k8s/services/cart-service.yaml
+    - k8s/deployments/payment-service.yaml
+    - k8s/services/payment-service.yaml
+    - k8s/deployments/shipping-service.yaml
+    - k8s/services/shipping-service.yaml
+    - k8s/deployments/currency-service.yaml
+    - k8s/services/currency-service.yaml
+    - k8s/deployments/recommendation-service.yaml
+    - k8s/services/recommendation-service.yaml
+    - k8s/deployments/mailhog.yaml
+    - k8s/services/mailhog.yaml
+    - k8s/deployments/email-service.yaml
+    - k8s/services/email-service.yaml
+    - k8s/deployments/checkout-service.yaml
+    - k8s/services/checkout-service.yaml
+    - k8s/deployments/frontend.yaml
+    - k8s/services/frontend.yaml
+    #ingress
+    - k8s/ingress.yaml

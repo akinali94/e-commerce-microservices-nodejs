@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: frontend
+        ports:
+        - containerPort: 3000
+        env:
+        - name: REACT_APP_AD_SERVICE_URL
+          value: "http://ad-service.default.svc.cluster.local:9555"
+        - name: REACT_APP_CART_SERVICE_URL
+          value: "http://cart-service.default.svc.cluster.local:9556"
+        - name: REACT_APP_CHECKOUT_SERVICE_URL
+          value: "http://checkout-service.default.svc.cluster.local:9557"
+        - name: REACT_APP_CURRENCY_SERVICE_URL
+          value: "http://currency-service.default.svc.cluster.local:9558"
+        - name: REACT_APP_PRODUCT_SERVICE_URL
+          value: "http://product-catalog-service.default.svc.cluster.local:9561"
+        - name: REACT_APP_RECOMMENDATION_SERVICE_URL
+          value: "http://recommendation-service.default.svc.cluster.local:9562"
+        - name: REACT_APP_SHIPPING_SERVICE_URL
+          value: "http://shipping-service.default.svc.cluster.local:9563"
+        - name: REACT_APP_SHOP_BRANDING
+          value: "true"
+        - name: REACT_APP_ENABLE_ASSISTANT
+          value: "true"
+        - name: REACT_APP_BASE_URL
+          value: ""
+        - name: REACT_APP_DEBUG
+          value: "false"
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
